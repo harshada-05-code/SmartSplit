@@ -3,6 +3,7 @@ import { createGroup } from "../api/firestoreService";
 import { db } from "../api/firebase"; // Direct import from the config file
 import { collection, onSnapshot, query, orderBy } from 'firebase/firestore';
 import { Users, Plus, ArrowRight, UserPlus } from 'lucide-react';
+import { motion } from 'framer-motion';
 
 const GroupSelection = ({ onSelectGroup }) => {
   const [groups, setGroups] = useState([]);
@@ -32,20 +33,41 @@ const GroupSelection = ({ onSelectGroup }) => {
   };
 
   return (
-    <div className="max-w-2xl mx-auto p-6 space-y-8">
+    <div className="container-page max-w-2xl space-y-8">
       <header className="text-center">
-        <h1 className="text-3xl font-bold text-gray-900">Welcome to SmartSplit</h1>
-        <p className="text-gray-500 mt-2">Select a group or create a new one to start splitting</p>
+        <motion.div
+          initial={{ opacity: 0, y: 10 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.4 }}
+          className="mx-auto inline-flex items-center gap-2 rounded-full border border-white/30 bg-white/60 px-4 py-2 text-xs font-semibold text-slate-700 shadow-sm backdrop-blur dark:border-white/10 dark:bg-slate-950/40 dark:text-slate-200"
+        >
+          <span className="h-2 w-2 rounded-full bg-gradient-to-r from-indigo-500 to-pink-500" />
+          Split expenses. Settle instantly. Stay friends.
+        </motion.div>
+        <h1 className="mt-4 text-4xl font-black tracking-tight text-slate-900 dark:text-white">
+          Welcome to <span className="bg-gradient-to-r from-indigo-600 via-violet-600 to-pink-600 bg-clip-text text-transparent">SmartSplit</span>
+        </h1>
+        <p className="mt-2 text-sm text-slate-600 dark:text-slate-300">
+          Select a group or create a new one to start splitting.
+        </p>
       </header>
 
       {/* Create New Group Section */}
-      <div className="bg-white p-6 rounded-2xl shadow-sm border border-indigo-100">
-        <h2 className="text-lg font-semibold mb-4 flex items-center gap-2">
-          <Plus className="text-primary" /> Create New Group
+      <motion.div
+        initial={{ opacity: 0, y: 12 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.45, delay: 0.05 }}
+        className="card card-hover p-6"
+      >
+        <h2 className="mb-4 flex items-center gap-2 text-lg font-extrabold text-slate-900 dark:text-white">
+          <span className="grid h-9 w-9 place-items-center rounded-2xl bg-indigo-500/10 text-indigo-600 dark:bg-indigo-500/15 dark:text-indigo-300">
+            <Plus size={18} />
+          </span>
+          Create New Group
         </h2>
         <div className="space-y-4">
           <input 
-            className="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-primary outline-none"
+            className="input"
             placeholder="Group Name (e.g., Goa Trip 2026)"
             value={newGroupName}
             onChange={(e) => setNewGroupName(e.target.value)}
@@ -53,20 +75,20 @@ const GroupSelection = ({ onSelectGroup }) => {
           
           <div className="flex gap-2">
             <input 
-              className="flex-1 px-4 py-2 border rounded-lg focus:ring-2 focus:ring-primary outline-none"
+              className="input flex-1"
               placeholder="Add Member Name"
               value={memberInput}
               onChange={(e) => setMemberInput(e.target.value)}
               onKeyPress={(e) => e.key === 'Enter' && addMember()}
             />
-            <button onClick={addMember} className="bg-gray-100 p-2 rounded-lg hover:bg-gray-200">
+            <button onClick={addMember} type="button" className="btn-soft px-3">
               <UserPlus size={20} />
             </button>
           </div>
 
           <div className="flex flex-wrap gap-2">
             {members.map((m, i) => (
-              <span key={i} className="bg-indigo-50 text-primary px-3 py-1 rounded-full text-sm font-medium">
+              <span key={i} className="badge">
                 {m}
               </span>
             ))}
@@ -75,33 +97,37 @@ const GroupSelection = ({ onSelectGroup }) => {
           <button 
             onClick={handleCreate}
             disabled={!newGroupName || members.length === 0}
-            className="w-full bg-primary text-white py-3 rounded-xl font-bold shadow-lg shadow-indigo-200 disabled:opacity-50"
+            className="btn-primary w-full py-3"
+            type="button"
           >
             Start Splitting
           </button>
         </div>
-      </div>
+      </motion.div>
 
       {/* Existing Groups List */}
       <div className="space-y-3">
-        <h3 className="text-sm font-semibold text-gray-400 uppercase tracking-wider">Your Groups</h3>
+        <h3 className="text-xs font-extrabold uppercase tracking-wider text-slate-500 dark:text-slate-400">Your Groups</h3>
         {groups.map(group => (
-          <button 
+          <motion.button
             key={group.id}
             onClick={() => onSelectGroup(group)}
-            className="w-full flex items-center justify-between p-4 bg-white rounded-xl border border-gray-100 hover:border-primary transition-all group"
+            whileHover={{ y: -2 }}
+            whileTap={{ scale: 0.99 }}
+            className="card card-hover group w-full p-4 text-left"
+            type="button"
           >
             <div className="flex items-center gap-4">
-              <div className="bg-indigo-100 p-3 rounded-lg text-primary">
+              <div className="grid h-12 w-12 place-items-center rounded-2xl bg-gradient-to-br from-indigo-500/15 via-violet-500/10 to-pink-500/10 text-indigo-600 dark:text-indigo-300">
                 <Users size={24} />
               </div>
               <div className="text-left">
-                <p className="font-bold text-gray-800">{group.name}</p>
-                <p className="text-xs text-gray-400">{group.members?.length} members</p>
+                <p className="font-extrabold text-slate-900 dark:text-white">{group.name}</p>
+                <p className="text-xs text-slate-500 dark:text-slate-400">{group.members?.length} members</p>
               </div>
             </div>
-            <ArrowRight className="text-gray-300 group-hover:text-primary transition-colors" />
-          </button>
+            <ArrowRight className="text-slate-300 transition-colors group-hover:text-indigo-500 dark:text-slate-600 dark:group-hover:text-indigo-300" />
+          </motion.button>
         ))}
       </div>
     </div>

@@ -3,6 +3,7 @@ import { suggestCategory } from '../lib/aiClassifier';
 import { addExpense } from '../api/firestoreService';
 import { Users, IndianRupee, PieChart, Info } from 'lucide-react';
 import toast from 'react-hot-toast';
+import { motion } from 'framer-motion';
 
 const AddExpenseForm = ({ groupId, members }) => {
   const [description, setDescription] = useState('');
@@ -47,13 +48,16 @@ const AddExpenseForm = ({ groupId, members }) => {
   };
 
   return (
-    <form onSubmit={handleSubmit} className="bg-white dark:bg-gray-800 p-6 rounded-3xl shadow-lg border border-gray-100 dark:border-gray-700 space-y-4">
-      <h3 className="font-bold text-gray-800 dark:text-white flex items-center gap-2">
-        <PieChart size={18} className="text-indigo-500"/> Split Expense
+    <form onSubmit={handleSubmit} className="card card-hover p-6 space-y-4">
+      <h3 className="flex items-center gap-2 font-extrabold text-slate-900 dark:text-white">
+        <span className="grid h-9 w-9 place-items-center rounded-2xl bg-indigo-500/10 text-indigo-600 dark:bg-indigo-500/15 dark:text-indigo-300">
+          <PieChart size={18} />
+        </span>
+        Split Expense
       </h3>
 
       <input 
-        className="w-full p-3 bg-gray-50 dark:bg-gray-900 border-none rounded-2xl focus:ring-2 focus:ring-indigo-500 dark:text-white"
+        className="input"
         placeholder="Description"
         value={description}
         onChange={(e) => setDescription(e.target.value)}
@@ -61,10 +65,10 @@ const AddExpenseForm = ({ groupId, members }) => {
       />
 
       <div className="relative">
-        <span className="absolute left-3 top-3 text-gray-400">₹</span>
+        <span className="absolute left-4 top-3.5 text-slate-400">₹</span>
         <input 
           type="number"
-          className="w-full p-3 pl-8 bg-gray-50 dark:bg-gray-900 border-none rounded-2xl focus:ring-2 focus:ring-indigo-500 dark:text-white"
+          className="input pl-8"
           placeholder="0.00"
           value={amount}
           onChange={(e) => setAmount(e.target.value)}
@@ -73,40 +77,53 @@ const AddExpenseForm = ({ groupId, members }) => {
       </div>
 
       {/* Split Type Toggle */}
-      <div className="flex bg-gray-100 dark:bg-gray-900 p-1 rounded-xl">
+      <div className="flex rounded-2xl border border-slate-200/70 bg-white/60 p-1 shadow-sm dark:border-white/10 dark:bg-slate-950/25">
         <button 
           type="button"
           onClick={() => setSplitType('equal')}
-          className={`flex-1 py-2 text-xs font-bold rounded-lg transition-all ${splitType === 'equal' ? 'bg-white dark:bg-gray-700 shadow-sm text-indigo-600 dark:text-indigo-400' : 'text-gray-500'}`}
+          className={`flex-1 rounded-xl py-2 text-xs font-extrabold transition-all ${
+            splitType === 'equal'
+              ? 'bg-white shadow-sm text-indigo-600 dark:bg-white/10 dark:text-indigo-300'
+              : 'text-slate-500 hover:text-slate-700 dark:text-slate-400 dark:hover:text-slate-200'
+          }`}
         > EQUAL </button>
         <button 
           type="button"
           onClick={() => setSplitType('custom')}
-          className={`flex-1 py-2 text-xs font-bold rounded-lg transition-all ${splitType === 'custom' ? 'bg-white dark:bg-gray-700 shadow-sm text-indigo-600 dark:text-indigo-400' : 'text-gray-500'}`}
+          className={`flex-1 rounded-xl py-2 text-xs font-extrabold transition-all ${
+            splitType === 'custom'
+              ? 'bg-white shadow-sm text-indigo-600 dark:bg-white/10 dark:text-indigo-300'
+              : 'text-slate-500 hover:text-slate-700 dark:text-slate-400 dark:hover:text-slate-200'
+          }`}
         > CUSTOM </button>
       </div>
 
       {/* Custom Inputs Rendering */}
       {splitType === 'custom' && (
-        <div className="space-y-2 animate-in fade-in zoom-in duration-300">
-          <p className="text-[10px] text-gray-400 font-bold uppercase flex items-center gap-1">
+        <motion.div
+          initial={{ opacity: 0, y: 6 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.25 }}
+          className="space-y-2"
+        >
+          <p className="flex items-center gap-1 text-[10px] font-extrabold uppercase tracking-wider text-slate-500 dark:text-slate-400">
             <Info size={12}/> Enter exact amount for each
           </p>
           {members.map(member => (
             <div key={member} className="flex items-center justify-between gap-4">
-              <span className="text-sm text-gray-600 dark:text-gray-400">{member}</span>
+              <span className="text-sm font-semibold text-slate-700 dark:text-slate-200">{member}</span>
               <input 
                 type="number"
                 placeholder="₹0"
-                className="w-24 p-2 bg-gray-50 dark:bg-gray-900 border rounded-xl text-sm dark:border-gray-700 dark:text-white"
+                className="input w-28 px-3 py-2"
                 onChange={(e) => handleInputChange(member, e.target.value)}
               />
             </div>
           ))}
-        </div>
+        </motion.div>
       )}
 
-      <button type="submit" className="w-full bg-indigo-600 text-white py-3 rounded-2xl font-bold hover:bg-indigo-700 transition-all shadow-lg shadow-indigo-200 dark:shadow-none">
+      <button type="submit" className="btn-primary w-full py-3">
         Add Expense
       </button>
     </form>

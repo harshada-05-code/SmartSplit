@@ -13,6 +13,7 @@ import {
   Sun,
   ExternalLink 
 } from 'lucide-react';
+import { motion } from 'framer-motion';
 
 const Dashboard = ({ groupId, members }) => {
   const [expenses, setExpenses] = useState([]);
@@ -44,51 +45,96 @@ const Dashboard = ({ groupId, members }) => {
   };
 
   return (
-    <div className="min-h-screen bg-gray-50 dark:bg-gray-900 transition-colors duration-300">
-      <header className="bg-white dark:bg-gray-800 border-b dark:border-gray-700 p-4 sticky top-0 z-10">
-        <div className="max-w-6xl mx-auto flex justify-between items-center">
-          <h1 className="text-xl font-bold text-indigo-600 dark:text-indigo-400 flex items-center gap-2">
-            <LayoutDashboard size={24} /> SmartSplit
-          </h1>
-          <button onClick={toggleDarkMode} className="p-2 rounded-xl bg-gray-100 dark:bg-gray-700">
-            {isDark ? <Sun size={20} /> : <Moon size={20} />}
+    <div className="transition-colors duration-300">
+      <header className="glass-nav">
+        <div className="container-page flex items-center justify-between py-4">
+          <div className="flex items-center gap-3">
+            <div className="grid h-10 w-10 place-items-center rounded-2xl bg-gradient-to-br from-indigo-500 via-violet-500 to-pink-500 text-white shadow-lg shadow-indigo-500/20">
+              <LayoutDashboard size={18} />
+            </div>
+            <div>
+              <div className="text-xs font-semibold text-slate-500 dark:text-slate-400">Dashboard</div>
+              <div className="text-base font-extrabold tracking-tight text-slate-900 dark:text-white">
+                Group Overview
+              </div>
+            </div>
+          </div>
+
+          <button onClick={toggleDarkMode} className="btn-soft" type="button" aria-label="Toggle dark mode">
+            {isDark ? <Sun size={18} /> : <Moon size={18} />}
+            <span className="hidden sm:inline">{isDark ? 'Light' : 'Dark'}</span>
           </button>
         </div>
       </header>
 
-      <main className="max-w-6xl mx-auto p-6 space-y-6">
+      <main className="container-page space-y-6">
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
           <div className="md:col-span-2">
-            <div className="bg-indigo-600 p-8 rounded-3xl text-white shadow-xl">
-              <p className="text-indigo-100 text-sm">Total Group Spend</p>
-              <h2 className="text-4xl font-black mt-1">
+            <motion.div
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.45 }}
+              className="relative overflow-hidden rounded-3xl p-8 text-white shadow-xl"
+              style={{
+                background:
+                  'linear-gradient(135deg, rgba(99,102,241,1) 0%, rgba(139,92,246,1) 45%, rgba(236,72,153,1) 100%)',
+              }}
+            >
+              <div className="pointer-events-none absolute -right-24 -top-24 h-72 w-72 rounded-full bg-white/15 blur-2xl" />
+              <div className="pointer-events-none absolute -bottom-28 -left-24 h-80 w-80 rounded-full bg-white/10 blur-2xl" />
+
+              <p className="text-sm font-semibold text-white/80">Total Group Spend</p>
+              <h2 className="mt-1 text-4xl font-black tracking-tight">
                 ₹{expenses.reduce((acc, curr) => acc + curr.amount, 0).toLocaleString()}
               </h2>
-            </div>
+              <p className="mt-3 text-xs font-semibold text-white/75">
+                {expenses.length} expenses · {members?.length ?? 0} members
+              </p>
+            </motion.div>
           </div>
           <SpendingInsights expenses={expenses} />
         </div>
 
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
           <div className="lg:col-span-2 space-y-6">
-            <section className="bg-white dark:bg-gray-800 p-6 rounded-3xl shadow-sm border dark:border-gray-700">
-              <h3 className="text-lg font-bold mb-4 dark:text-white flex items-center gap-2">
-                <ArrowRightLeft className="text-indigo-500" size={20} /> Suggested Settlements
+            <section className="card p-6">
+              <h3 className="mb-4 flex items-center gap-2 text-lg font-extrabold text-slate-900 dark:text-white">
+                <span className="grid h-9 w-9 place-items-center rounded-2xl bg-indigo-500/10 text-indigo-600 dark:bg-indigo-500/15 dark:text-indigo-300">
+                  <ArrowRightLeft size={18} />
+                </span>
+                Suggested Settlements
               </h3>
               <div className="space-y-3">
                 {settlements.map((s, i) => (
-                  <div key={i} className="flex items-center justify-between p-4 bg-gray-50 dark:bg-gray-700 rounded-2xl">
-                    <div>
-                      <p className="text-xs text-gray-400 font-bold uppercase">{s.from} owes</p>
-                      <p className="text-xl font-black text-gray-800 dark:text-white">₹{s.amount}</p>
-                      <p className="text-xs text-indigo-500 font-medium">To {s.to}</p>
+                  <motion.div
+                    key={i}
+                    whileHover={{ y: -2 }}
+                    className="flex items-center justify-between gap-4 rounded-2xl border border-slate-200/70 bg-white/70 p-4 shadow-sm transition dark:border-white/10 dark:bg-slate-950/25"
+                  >
+                    <div className="min-w-0">
+                      <p className="truncate text-xs font-extrabold uppercase tracking-wider text-slate-500 dark:text-slate-400">
+                        {s.from} owes
+                      </p>
+                      <p className="mt-0.5 text-2xl font-black tracking-tight text-slate-900 dark:text-white">
+                        ₹{s.amount}
+                      </p>
+                      <p className="text-xs font-semibold text-indigo-600 dark:text-indigo-300">
+                        To {s.to}
+                      </p>
                     </div>
+
                     {/* Requirement: One-Tap UPI Payment  */}
-                    <a href={s.upiUrl} className="bg-indigo-600 text-white px-4 py-2 rounded-xl text-sm font-bold flex items-center gap-2">
+                    <a href={s.upiUrl} className="btn-primary shrink-0 px-4 py-2.5" target="_blank" rel="noreferrer">
                       Pay Now <ExternalLink size={14} />
                     </a>
-                  </div>
+                  </motion.div>
                 ))}
+
+                {settlements.length === 0 && (
+                  <div className="rounded-2xl border border-dashed border-slate-300/60 bg-white/40 p-6 text-center text-sm font-semibold text-slate-600 dark:border-white/10 dark:bg-slate-950/20 dark:text-slate-300">
+                    No settlements yet. Add an expense to see who owes what.
+                  </div>
+                )}
               </div>
             </section>
           </div>

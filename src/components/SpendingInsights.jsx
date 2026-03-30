@@ -16,9 +16,12 @@ const SpendingInsights = ({ expenses }) => {
   }));
 
   return (
-    <div className="bg-white dark:bg-gray-800 p-6 rounded-3xl shadow-sm border border-gray-100 dark:border-gray-700 h-80">
-      <h3 className="font-bold text-gray-800 dark:text-white mb-4 flex items-center gap-2">
-        <PieChartIcon className="text-indigo-500" size={20} /> 📊 Category Breakdown
+    <div className="card card-hover h-80 p-6">
+      <h3 className="mb-4 flex items-center gap-2 font-extrabold text-slate-900 dark:text-white">
+        <span className="grid h-9 w-9 place-items-center rounded-2xl bg-indigo-500/10 text-indigo-600 dark:bg-indigo-500/15 dark:text-indigo-300">
+          <PieChartIcon size={18} />
+        </span>
+        Category Breakdown
       </h3>
       
       <div className="h-full w-full pb-8">
@@ -36,7 +39,12 @@ const SpendingInsights = ({ expenses }) => {
               ))}
             </Pie>
             <Tooltip 
-              contentStyle={{ borderRadius: '12px', border: 'none', boxShadow: '0 10px 15px -3px rgb(0 0 0 / 0.1)' }}
+              contentStyle={{
+                borderRadius: '16px',
+                border: '1px solid rgba(148, 163, 184, 0.25)',
+                boxShadow: '0 18px 35px rgba(2, 6, 23, 0.18)',
+                backdropFilter: 'blur(12px)',
+              }}
             />
             <Legend />
           </PieChart>
