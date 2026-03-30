@@ -1,4 +1,5 @@
-import { db } from "./firebase";
+import { db } from "./firebase"; // Import it from your config
+export { db }; // Re-export it so other files can find it here
 import { 
   collection, 
   addDoc, 

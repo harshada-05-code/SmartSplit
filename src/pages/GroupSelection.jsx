@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
-import { createGroup, db } from '../api/firestoreService';
+import { createGroup } from "../api/firestoreService";
+import { db } from "../api/firebase"; // Direct import from the config file
 import { collection, onSnapshot, query, orderBy } from 'firebase/firestore';
 import { Users, Plus, ArrowRight, UserPlus } from 'lucide-react';
 
