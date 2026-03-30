@@ -1,5 +1,5 @@
 import React from 'react';
-import { PieChart, TrendingDown } from 'lucide-react';
+// import { PieChart, TrendingDown } from 'lucide-react';
 import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip } from 'recharts';
 
 const COLORS = ['#6366f1', '#f59e0b', '#ef4444', '#10b981'];
