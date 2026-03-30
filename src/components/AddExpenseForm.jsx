@@ -49,7 +49,7 @@ const AddExpenseForm = ({ groupId, members }) => {
   return (
     <form onSubmit={handleSubmit} className="bg-white dark:bg-gray-800 p-6 rounded-3xl shadow-lg border border-gray-100 dark:border-gray-700 space-y-4">
       <h3 className="font-bold text-gray-800 dark:text-white flex items-center gap-2">
-        size={18} className="text-indigo-500"/> Split Expense
+        <PieChart size={18} className="text-indigo-500"/> Split Expense
       </h3>
 
       <input 
