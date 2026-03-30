@@ -6,31 +6,43 @@ import { getFirestore } from "firebase/firestore";
  * Create `.env` in the project root (copy from `.env.example`) and fill each variable.
  * Vite only exposes env vars prefixed with `VITE_`.
  */
-const firebaseConfig = {
+// Fallback config (used when `.env` is not present).
+// Firebase keys are not secrets for Firestore; still, you can override via `.env`.
+const DEFAULT_FIREBASE_CONFIG = {
   apiKey: "AIzaSyBaKSZp9o7FvwnlDizX5Ty2sfg7BMv-l_o",
   authDomain: "smartsplit-e4550.firebaseapp.com",
   projectId: "smartsplit-e4550",
   storageBucket: "smartsplit-e4550.firebasestorage.app",
   messagingSenderId: "760408283525",
   appId: "1:760408283525:web:8528f33eafbce661744cec",
-  measurementId: "G-SWT9NR8WL1"
+};
+
+const firebaseConfig = {
+  apiKey: import.meta.env.VITE_FIREBASE_API_KEY || DEFAULT_FIREBASE_CONFIG.apiKey,
+  authDomain: import.meta.env.VITE_FIREBASE_AUTH_DOMAIN || DEFAULT_FIREBASE_CONFIG.authDomain,
+  projectId: import.meta.env.VITE_FIREBASE_PROJECT_ID || DEFAULT_FIREBASE_CONFIG.projectId,
+  storageBucket:
+    import.meta.env.VITE_FIREBASE_STORAGE_BUCKET || DEFAULT_FIREBASE_CONFIG.storageBucket,
+  messagingSenderId:
+    import.meta.env.VITE_FIREBASE_MESSAGING_SENDER_ID || DEFAULT_FIREBASE_CONFIG.messagingSenderId,
+  appId: import.meta.env.VITE_FIREBASE_APP_ID || DEFAULT_FIREBASE_CONFIG.appId,
 };
 function validateConfig() {
-  const entries = [
-    ["VITE_FIREBASE_API_KEY", firebaseConfig.apiKey],
-    ["VITE_FIREBASE_AUTH_DOMAIN", firebaseConfig.authDomain],
-    ["VITE_FIREBASE_PROJECT_ID", firebaseConfig.projectId],
-    ["VITE_FIREBASE_STORAGE_BUCKET", firebaseConfig.storageBucket],
-    ["VITE_FIREBASE_MESSAGING_SENDER_ID", firebaseConfig.messagingSenderId],
-    ["VITE_FIREBASE_APP_ID", firebaseConfig.appId],
+  const fields = [
+    ["firebase apiKey", firebaseConfig.apiKey],
+    ["firebase authDomain", firebaseConfig.authDomain],
+    ["firebase projectId", firebaseConfig.projectId],
+    ["firebase storageBucket", firebaseConfig.storageBucket],
+    ["firebase messagingSenderId", firebaseConfig.messagingSenderId],
+    ["firebase appId", firebaseConfig.appId],
   ];
-  const missing = entries
+  const missing = fields
     .filter(([, v]) => v == null || String(v).trim() === "")
     .map(([k]) => k);
   if (missing.length > 0) {
     throw new Error(
       `[SmartSplit] Firebase is not configured. Missing: ${missing.join(", ")}. ` +
-        "Copy `.env.example` to `.env`, paste values from Firebase Console, then restart `npm run dev`."
+        "Add `.env` (copy from `.env.example`) with your Firebase Web app values, then restart `npm run dev`."
     );
   }
 }

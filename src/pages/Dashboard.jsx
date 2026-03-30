@@ -15,24 +15,6 @@ import {
 } from 'lucide-react';
 import { motion } from 'framer-motion';
 
-import { db } from "../firebase";
-import { collection, onSnapshot } from "firebase/firestore";
-
-useEffect(() => {
-  const unsubscribe = onSnapshot(
-    collection(db, "expenses"),
-    (snapshot) => {
-      const data = snapshot.docs.map(doc => ({
-        id: doc.id,
-        ...doc.data()
-      }));
-      setExpenses(data);
-    }
-  );
-
-  return () => unsubscribe();
-}, []);
-
 
 const Dashboard = ({ groupId, members }) => {
   const [expenses, setExpenses] = useState([]);

@@ -5,16 +5,6 @@ import { PieChart, Info } from 'lucide-react';
 import toast from 'react-hot-toast';
 import { motion } from 'framer-motion';
 
-import { db } from "../firebase";
-import { collection, addDoc } from "firebase/firestore";
-
-const handleAddExpense = async () => {
-  await addDoc(collection(db, "expenses"), {
-    title: expenseTitle,
-    amount: amount,
-  });
-};
-
 function stripUndefined(obj) {
   return Object.fromEntries(Object.entries(obj).filter(([, v]) => v !== undefined));
 }
@@ -70,8 +60,8 @@ const AddExpenseForm = ({ groupId, members }) => {
     });
 
     try {
-      await addExpense(groupId, expenseData);
-      toast.success('Expense saved to Firebase');
+      const docRef = await addExpense(groupId, expenseData);
+      toast.success(`Expense saved (ID: ${docRef.id})`);
       setDescription('');
       setAmount('');
       setCustomShares({});
