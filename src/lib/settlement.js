@@ -1,10 +1,23 @@
 export const calculateBalances = (expenses, members) => {
   const balances = {};
   members.forEach(m => balances[m] = 0);
+
   expenses.forEach(exp => {
-    const share = exp.amount / members.length;
+    // Add the full amount to the payer
     balances[exp.payerId] += exp.amount;
-    members.forEach(m => balances[m] -= share);
+
+    if (exp.splitType === 'custom' && exp.customShares) {
+      // Subtract the specific custom amount from each member
+      Object.entries(exp.customShares).forEach(([member, share]) => {
+        balances[member] -= share;
+      });
+    } else {
+      // Standard equal split
+      const share = exp.amount / members.length;
+      members.forEach(m => {
+        balances[m] -= share;
+      });
+    }
   });
   return balances;
 };
@@ -25,7 +38,7 @@ export const minimizeTransactions = (balances) => {
       to: creditors[j].user,
       amount: settleAmount.toFixed(2),
       // UPI Link generation for "One-Tap Payment"
-      upiUrl: `upi://pay?pa=payee@upi&pn=${creditors[j].user}&am=${settleAmount.toFixed(2)}&cu=INR`
+      upiUrl: `upi://pay?pa=payee_vpa@upi&pn=${creditors[j].user}&am=${settleAmount.toFixed(2)}&cu=INR`
     });
     debtors[i].amount -= settleAmount;
     creditors[j].amount -= settleAmount;

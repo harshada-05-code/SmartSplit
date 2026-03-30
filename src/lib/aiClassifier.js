@@ -1,25 +1,17 @@
-const CATEGORY_MAP = {
-  food: ['dinner', 'pizza', 'restaurant', 'burger', 'zomato', 'swiggy', 'cafe'],
-  travel: ['fuel', 'petrol', 'uber', 'ola', 'bus', 'train', 'flight', 'cab'],
-  entertainment: ['movie', 'netflix', 'game', 'bowling', 'party'],
-  bills: ['rent', 'electricity', 'wifi', 'water', 'gas'],
+const CATEGORY_CONFIG = {
+  food: { icon: '🍕', keywords: ['pizza', 'zomato', 'swiggy', 'dinner', 'cake'] },
+  travel: { icon: '🚕', keywords: ['uber', 'ola', 'auto', 'fuel', 'petrol'] },
+  rent: { icon: '🏠', keywords: ['rent', 'maintenance', 'deposit'] }
 };
 
-const CATEGORY_ICONS = {
-  food: '🍕',
-  travel: '🚕',
-  rent: '🏠',
-  others: '📦'
-}
-
-export const suggestCategory = (text) => {
-  const input = text.toLowerCase();
-  for (const [category, keywords] of Object.entries(CATEGORY_MAP)) {
-    if (keywords.some(keyword => input.includes(keyword))) {
-      return category;
+export const suggestCategory = (desc) => {
+  const text = desc.toLowerCase();
+  for (const [name, config] of Object.entries(CATEGORY_CONFIG)) {
+    if (config.keywords.some(kw => text.includes(kw))) {
+      return { name, icon: config.icon };
     }
   }
-  return 'others';
+  return { name: 'others', icon: '📦' };
 };
 
 export const getAIRecommendation = (desc) => {

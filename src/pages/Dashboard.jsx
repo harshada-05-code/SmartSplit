@@ -1,108 +1,148 @@
 import React, { useState, useEffect } from 'react';
-import { subscribeToExpenses } from '../api/firestoreService';
-import AddExpenseForm from '../components/AddExpenseForm';
+import { db } from '../api/firebase';
+import { collection, onSnapshot, query, where, orderBy } from 'firebase/firestore';
 import { calculateBalances, minimizeTransactions } from '../lib/settlement';
-import { LayoutDashboard, Receipt, ArrowRightLeft, TrendingUp } from 'lucide-react';
-
-document.documentElement.classList.toggle('dark')
+import AddExpenseForm from '../components/AddExpenseForm';
+import SpendingInsights from '../components/SpendingInsights';
+import { 
+  LayoutDashboard, 
+  Receipt, 
+  ArrowRightLeft, 
+  TrendingUp, 
+  Moon, 
+  Sun,
+  ExternalLink 
+} from 'lucide-react';
 
 const Dashboard = ({ groupId, members }) => {
   const [expenses, setExpenses] = useState([]);
-  const [balances, setBalances] = useState({});
   const [settlements, setSettlements] = useState([]);
+  const [isDark, setIsDark] = useState(false);
 
   useEffect(() => {
-    // Real-time listener for the "Real-Time Performance" requirement
-    const unsubscribe = subscribeToExpenses(groupId, (data) => {
+    // 4. Real-Time Updates: Listen for changes in Firestore [cite: 9, 37]
+    const q = query(
+      collection(db, "expenses"), 
+      where("groupId", "==", groupId),
+      orderBy("timestamp", "desc")
+    );
+
+    const unsubscribe = onSnapshot(q, (snapshot) => {
+      const data = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
       setExpenses(data);
-      const newBalances = calculateBalances(data, members);
-      setBalances(newBalances);
-      setSettlements(minimizeTransactions(newBalances));
+      
+      // 1. Smart Settlement: Calculate optimized debts [cite: 18, 19]
+      const balances = calculateBalances(data, members);
+      setSettlements(minimizeTransactions(balances));
     });
 
     return () => unsubscribe();
   }, [groupId, members]);
 
+  const toggleDarkMode = () => {
+    setIsDark(!isDark);
+    document.documentElement.classList.toggle('dark'); // 13. Dark Mode 
+  };
+
   return (
-    <div className="min-h-screen bg-gray-50 pb-20">
-      {/* Header Stat Cards */}
-      <div className="bg-primary p-6 pb-24 text-white">
-        <h1 className="text-2xl font-bold flex items-center gap-2">
-          <LayoutDashboard /> SmartSplit Dashboard
-        </h1>
-      </div>
-
-      <div className="max-w-4xl mx-auto px-4 -mt-16 space-y-6">
-        {/* 1. Quick Summary Card */}
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          <div className="bg-white p-6 rounded-2xl shadow-sm border border-gray-100">
-            <div className="flex items-center gap-3 text-gray-500 mb-2">
-              <TrendingUp size={20} />
-              <span className="text-sm font-medium">Total Group Spend</span>
-            </div>
-            <h2 className="text-3xl font-bold text-gray-900">
-              ₹{expenses.reduce((acc, curr) => acc + curr.amount, 0).toFixed(2)}
-            </h2>
-          </div>
-
-          <div className="bg-white p-6 rounded-2xl shadow-sm border border-gray-100">
-            <div className="flex items-center gap-3 text-gray-500 mb-2">
-              <ArrowRightLeft size={20} />
-              <span className="text-sm font-medium">Pending Settlements</span>
-            </div>
-            <h2 className="text-3xl font-bold text-indigo-600">{settlements.length}</h2>
-          </div>
+    <div className="min-h-screen bg-gray-50 dark:bg-gray-900 transition-colors duration-300 pb-10">
+      {/* Header with Dark Mode Toggle */}
+      <header className="bg-white dark:bg-gray-800 border-b dark:border-gray-700 p-4 sticky top-0 z-10 shadow-sm">
+        <div className="max-w-6xl mx-auto flex justify-between items-center">
+          <h1 className="text-xl font-bold text-indigo-600 dark:text-indigo-400 flex items-center gap-2">
+            <LayoutDashboard size={24} /> SmartSplit
+          </h1>
+          <button 
+            onClick={toggleDarkMode}
+            className="p-2 rounded-xl bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-300 transition-all hover:scale-110"
+          >
+            {isDark ? <Sun size={20} /> : <Moon size={20} />}
+          </button>
         </div>
+      </header>
 
-        {/* 2. Settlement Logic (Who owes whom) */}
-        <div className="bg-white p-6 rounded-2xl shadow-sm border border-gray-100">
-          <h3 className="font-semibold text-gray-800 mb-4 flex items-center gap-2">
-            <ArrowRightLeft className="text-primary" size={18}/> Suggested Settlements
-          </h3>
-          <div className="space-y-3">
-            {settlements.length > 0 ? settlements.map((s, i) => (
-              <div key={i} className="flex items-center justify-between p-3 bg-gray-50 rounded-xl border border-gray-100">
-                <span className="font-medium text-gray-700">{s.from}</span>
-                <div className="flex flex-col items-center">
-                  <span className="text-xs text-gray-400">pays</span>
-                  <div className="h-px w-12 bg-gray-300 my-1"></div>
-                  <span className="text-primary font-bold">₹{s.amount}</span>
-                </div>
-                <span className="font-medium text-gray-700">{s.to}</span>
+      <main className="max-w-6xl mx-auto p-4 md:p-6 space-y-6">
+        {/* 2. Clear Balance Dashboard (Visual Stats) [cite: 10, 18] */}
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+          <div className="md:col-span-2">
+            <div className="bg-gradient-to-br from-indigo-600 to-violet-700 p-6 rounded-3xl text-white shadow-xl">
+              <p className="text-indigo-100 text-sm font-medium">Total Group Spend</p>
+              <h2 className="text-4xl font-black mt-1">
+                ₹{expenses.reduce((acc, curr) => acc + curr.amount, 0).toLocaleString()}
+              </h2>
+              <div className="mt-4 flex gap-2">
+                <span className="bg-white/20 px-3 py-1 rounded-full text-xs font-bold uppercase tracking-wider">
+                  {expenses.length} Expenses Total
+                </span>
               </div>
-            )) : (
-              <p className="text-center text-gray-400 py-4 italic">Everyone is settled up! 🎉</p>
-            )}
-          </div>
-        </div>
-
-        {/* 3. Add Expense & Recent History */}
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-          <div className="lg:col-span-1">
-             <AddExpenseForm groupId={groupId} members={members} />
+            </div>
           </div>
           
-          <div className="lg:col-span-2 bg-white p-6 rounded-2xl shadow-sm border border-gray-100">
-            <h3 className="font-semibold text-gray-800 mb-4 flex items-center gap-2">
-              <Receipt className="text-primary" size={18}/> Recent Expenses
-            </h3>
-            <div className="space-y-4 max-h-[400px] overflow-y-auto pr-2">
-              {expenses.map((exp) => (
-                <div key={exp.id} className="flex justify-between items-center py-3 border-b border-gray-50 last:border-0">
-                  <div>
-                    <p className="font-semibold text-gray-800">{exp.description}</p>
-                    <p className="text-xs text-gray-400 capitalize">{exp.category} • Paid by {exp.payerId}</p>
+          {/* 6. Spending Insights (Pie Chart Component) [cite: 26, 39] */}
+          <SpendingInsights expenses={expenses} />
+        </div>
+
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+          <div className="lg:col-span-2 space-y-6">
+            {/* 1. Smart Settlement List [cite: 19] */}
+            <section className="bg-white dark:bg-gray-800 p-6 rounded-3xl shadow-sm border border-gray-100 dark:border-gray-700">
+              <h3 className="text-lg font-bold text-gray-800 dark:text-white mb-4 flex items-center gap-2">
+                <ArrowRightLeft className="text-indigo-500" size={20} /> Suggested Settlements
+              </h3>
+              <div className="space-y-3">
+                {settlements.map((s, i) => (
+                  <div key={i} className="flex items-center justify-between p-4 bg-gray-50 dark:bg-gray-700/50 rounded-2xl border border-gray-100 dark:border-gray-600 group transition-all hover:border-indigo-300">
+                    <div>
+                      <p className="text-xs text-gray-400 font-bold uppercase">{s.from} owes</p>
+                      <p className="text-xl font-black text-gray-800 dark:text-white">₹{s.amount}</p>
+                      <p className="text-xs text-indigo-500 font-medium">To {s.to}</p>
+                    </div>
+                    {/* 8. One-Tap UPI Payment Button  */}
+                    <a 
+                      href={s.upiUrl}
+                      className="bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2 rounded-xl text-sm font-bold shadow-lg flex items-center gap-2 transition-all active:scale-95"
+                    >
+                      Pay Now <ExternalLink size={14} />
+                    </a>
                   </div>
-                  <p className="font-bold text-gray-900">₹{exp.amount}</p>
-                </div>
-              ))}
+                ))}
+              </div>
+            </section>
+
+            {/* Recent Expenses List */}
+            <section className="bg-white dark:bg-gray-800 p-6 rounded-3xl shadow-sm border border-gray-100 dark:border-gray-700">
+              <h3 className="text-lg font-bold text-gray-800 dark:text-white mb-4 flex items-center gap-2">
+                <Receipt className="text-indigo-500" size={20} /> Recent Activity
+              </h3>
+              <div className="space-y-4">
+                {expenses.map((exp) => (
+                  <div key={exp.id} className="flex justify-between items-center py-3 border-b dark:border-gray-700 last:border-0">
+                    <div className="flex items-center gap-3">
+                      <div className="w-10 h-10 bg-indigo-50 dark:bg-indigo-900/30 rounded-full flex items-center justify-center text-xl">
+                        {exp.categoryIcon || '📦'}
+                      </div>
+                      <div>
+                        <p className="font-bold text-gray-800 dark:text-white">{exp.description}</p>
+                        <p className="text-xs text-gray-400 capitalize">Paid by {exp.payerId}</p>
+                      </div>
+                    </div>
+                    <p className="font-black text-gray-900 dark:text-white text-lg">₹{exp.amount}</p>
+                  </div>
+                ))}
+              </div>
+            </section>
+          </div>
+
+          {/* 3. Add Expense Form (Sidebar) [cite: 7, 17] */}
+          <div className="lg:col-span-1">
+            <div className="sticky top-24">
+              <AddExpenseForm groupId={groupId} members={members} />
             </div>
           </div>
         </div>
-      </div>
+      </main>
     </div>
   );
 };
 
 export default Dashboard;
-
