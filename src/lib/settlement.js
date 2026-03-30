@@ -33,12 +33,14 @@ export const minimizeTransactions = (balances) => {
   let i = 0, j = 0;
   while (i < debtors.length && j < creditors.length) {
     const settleAmount = Math.min(debtors[i].amount, creditors[j].amount);
+    const amountNum = Number(settleAmount);
+    const amountStr = Number.isFinite(amountNum) ? amountNum.toFixed(2) : '0.00';
     transactions.push({
       from: debtors[i].user,
       to: creditors[j].user,
-      amount: settleAmount.toFixed(2),
+      amount: amountStr,
       // UPI Link generation for "One-Tap Payment"
-      upiUrl: `upi://pay?pa=payee_vpa@upi&pn=${creditors[j].user}&am=${settleAmount.toFixed(2)}&cu=INR`
+      upiUrl: `upi://pay?pa=payee_vpa@upi&pn=${creditors[j].user}&am=${amountStr}&cu=INR`
     });
     debtors[i].amount -= settleAmount;
     creditors[j].amount -= settleAmount;

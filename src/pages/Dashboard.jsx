@@ -16,6 +16,13 @@ import {
 import { motion } from 'framer-motion';
 import toast from 'react-hot-toast';
 
+function formatMoney(v) {
+  // Prevents display issues like `₹.00` when value is missing or oddly formatted.
+  const n = typeof v === 'string' ? Number(v) : v;
+  if (!Number.isFinite(n)) return '0.00';
+  return Number(n).toFixed(2);
+}
+
 
 const Dashboard = ({ groupId, members }) => {
   const [expenses, setExpenses] = useState([]);
