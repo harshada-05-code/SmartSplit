@@ -1,60 +1,78 @@
 import React, { useState } from 'react';
 import { suggestCategory } from '../lib/aiClassifier';
 import { addExpense } from '../api/firestoreService';
-import { Users, IndianRupee, PieChart, Info } from 'lucide-react';
+import { PieChart, Info } from 'lucide-react';
 import toast from 'react-hot-toast';
 import { motion } from 'framer-motion';
+
+function stripUndefined(obj) {
+  return Object.fromEntries(Object.entries(obj).filter(([, v]) => v !== undefined));
+}
 
 const AddExpenseForm = ({ groupId, members }) => {
   const [description, setDescription] = useState('');
   const [amount, setAmount] = useState('');
-  const [splitType, setSplitType] = useState('equal'); // 'equal' or 'custom'
-  const [customShares, setCustomShares] = useState({}); // Stores { memberName: amount }
+  const [splitType, setSplitType] = useState('equal');
+  const [customShares, setCustomShares] = useState({});
 
   const handleInputChange = (member, value) => {
-    setCustomShares({ ...customShares, [member]: parseFloat(value) || 0 });
+    setCustomShares((prev) => ({ ...prev, [member]: parseFloat(value) || 0 }));
   };
 
-    const handleSubmit = async (e) => {
-  e.preventDefault();
-  try {
-    const res = await addExpense(groupId, expenseData);
-    alert("Check Firebase Console for ID: " + res.id); // If this alert pops up, the data IS in Firebase somewhere!
-  } catch (err) {
-    alert("Firebase Error: " + err.message); // This will tell us if permission is denied.
-  }
-};
-    
-    // Validation for Custom Split
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+
+    if (!groupId) {
+      toast.error('No group selected. Go back and open a group.');
+      return;
+    }
+    if (!members?.length) {
+      toast.error('This group has no members.');
+      return;
+    }
+
+    const totalAmount = parseFloat(amount, 10);
+    if (Number.isNaN(totalAmount) || totalAmount <= 0) {
+      toast.error('Enter a valid amount.');
+      return;
+    }
+
     if (splitType === 'custom') {
       const enteredTotal = Object.values(customShares).reduce((a, b) => a + b, 0);
       if (Math.abs(enteredTotal - totalAmount) > 0.1) {
-        return toast.error(`Total split (₹${enteredTotal}) must equal expense amount (₹${totalAmount})`);
+        toast.error(
+          `Total split (₹${enteredTotal.toFixed(2)}) must equal expense amount (₹${totalAmount.toFixed(2)})`
+        );
+        return;
       }
     }
 
     const { name, icon } = suggestCategory(description);
 
-    const expenseData = {
-      description,
+    const expenseData = stripUndefined({
+      description: description.trim(),
       amount: totalAmount,
       category: name,
       categoryIcon: icon,
-      payerId: members[0], // We assume the first member is the payer
+      payerId: members[0],
       splitType,
       customShares: splitType === 'custom' ? customShares : null,
-      timestamp: new Date()
-    };
+    });
 
-    await addExpense(groupId, expenseData);
-    toast.success('Expense added!');
-    setDescription('');
-    setAmount('');
-    setCustomShares({});
+    try {
+      await addExpense(groupId, expenseData);
+      toast.success('Expense saved to Firebase');
+      setDescription('');
+      setAmount('');
+      setCustomShares({});
+    } catch (err) {
+      console.error(err);
+      toast.error(err?.message || 'Could not save expense. Check Firestore rules and your connection.');
+    }
   };
 
   return (
-    <form onSubmit={handleSubmit} className="card card-hover p-6 space-y-4">
+    <form onSubmit={handleSubmit} className="card card-hover space-y-4 p-6">
       <h3 className="flex items-center gap-2 font-extrabold text-slate-900 dark:text-white">
         <span className="grid h-9 w-9 place-items-center rounded-2xl bg-indigo-500/10 text-indigo-600 dark:bg-indigo-500/15 dark:text-indigo-300">
           <PieChart size={18} />
@@ -62,7 +80,7 @@ const AddExpenseForm = ({ groupId, members }) => {
         Split Expense
       </h3>
 
-      <input 
+      <input
         className="input"
         placeholder="Description"
         value={description}
@@ -70,47 +88,45 @@ const AddExpenseForm = ({ groupId, members }) => {
         required
       />
 
-     <div className="relative">
-  {/* The icon/symbol */}
-  <span className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 font-medium">
-    ₹
-  </span>
-  
-  {/* The input with Padding Left (pl-8) */}
-  <input 
-    type="number"
-    className="w-full p-3 pl-10 bg-gray-50 dark:bg-gray-900 border-none rounded-2xl focus:ring-2 focus:ring-indigo-500 dark:text-white"
-    placeholder="0.00"
-    value={amount}
-    onChange={(e) => setAmount(e.target.value)}
-    required
-  />
-</div>
+      <div className="relative">
+        <span className="absolute left-4 top-1/2 -translate-y-1/2 font-medium text-slate-400">₹</span>
+        <input
+          type="number"
+          min="0"
+          step="0.01"
+          className="input w-full pl-10"
+          placeholder="0.00"
+          value={amount}
+          onChange={(e) => setAmount(e.target.value)}
+          required
+        />
+      </div>
 
-
-      {/* Two different split options: equal split and custom split */}
       <div className="flex rounded-2xl border border-slate-200/70 bg-white/60 p-1 shadow-sm dark:border-white/10 dark:bg-slate-950/25">
-        <button 
+        <button
           type="button"
           onClick={() => setSplitType('equal')}
           className={`flex-1 rounded-xl py-2 text-xs font-extrabold transition-all ${
             splitType === 'equal'
-              ? 'bg-white shadow-sm text-indigo-600 dark:bg-white/10 dark:text-indigo-300'
+              ? 'bg-white text-indigo-600 shadow-sm dark:bg-white/10 dark:text-indigo-300'
               : 'text-slate-500 hover:text-slate-700 dark:text-slate-400 dark:hover:text-slate-200'
           }`}
-        > EQUAL </button>
-        <button 
+        >
+          EQUAL
+        </button>
+        <button
           type="button"
           onClick={() => setSplitType('custom')}
           className={`flex-1 rounded-xl py-2 text-xs font-extrabold transition-all ${
             splitType === 'custom'
-              ? 'bg-white shadow-sm text-indigo-600 dark:bg-white/10 dark:text-indigo-300'
+              ? 'bg-white text-indigo-600 shadow-sm dark:bg-white/10 dark:text-indigo-300'
               : 'text-slate-500 hover:text-slate-700 dark:text-slate-400 dark:hover:text-slate-200'
           }`}
-        > CUSTOM </button>
+        >
+          CUSTOM
+        </button>
       </div>
 
-      {/* Custom Splitting between members */}
       {splitType === 'custom' && (
         <motion.div
           initial={{ opacity: 0, y: 6 }}
@@ -119,13 +135,15 @@ const AddExpenseForm = ({ groupId, members }) => {
           className="space-y-2"
         >
           <p className="flex items-center gap-1 text-[10px] font-extrabold uppercase tracking-wider text-slate-500 dark:text-slate-400">
-            <Info size={12}/> Enter exact amount for each
+            <Info size={12} /> Enter exact amount for each
           </p>
-          {members.map(member => (
+          {members.map((member) => (
             <div key={member} className="flex items-center justify-between gap-4">
               <span className="text-sm font-semibold text-slate-700 dark:text-slate-200">{member}</span>
-              <input 
+              <input
                 type="number"
+                min="0"
+                step="0.01"
                 placeholder="₹0"
                 className="input w-28 px-3 py-2"
                 onChange={(e) => handleInputChange(member, e.target.value)}

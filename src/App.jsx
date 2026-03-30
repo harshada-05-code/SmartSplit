@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { Toaster } from 'react-hot-toast';
 
 import GroupSelection from './pages/GroupSelection';
 import Dashboard from './pages/Dashboard';
@@ -9,6 +10,7 @@ function App() {
 
   return (
     <main className="app-shell">
+      <Toaster position="top-center" toastOptions={{ duration: 4000 }} />
       {!activeGroup ? (
         <GroupSelection onSelectGroup={setActiveGroup} />
       ) : (

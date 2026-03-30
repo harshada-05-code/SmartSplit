@@ -9,13 +9,23 @@ import {
   onSnapshot,
 } from "firebase/firestore";
 
+/** Firestore rejects `undefined` field values. */
+function omitUndefined(data) {
+  return Object.fromEntries(
+    Object.entries(data).filter(([, v]) => v !== undefined)
+  );
+}
+
 // 1. Create a new group
 export const createGroup = async (groupName, members) => {
-  return await addDoc(collection(db, "groups"), {
-    name: groupName,
-    members,
-    createdAt: serverTimestamp(),
-  });
+  return await addDoc(
+    collection(db, "groups"),
+    omitUndefined({
+      name: groupName.trim(),
+      members: Array.isArray(members) ? members : [],
+      createdAt: serverTimestamp(),
+    })
+  );
 };
 
 // 3. Real-time listener for expenses
@@ -28,13 +38,16 @@ export const subscribeToExpenses = (groupId, callback) => {
 };
 
 export const addExpense = async (groupId, expenseData) => {
+  if (!groupId) {
+    throw new Error("addExpense: groupId is required");
+  }
+  const payload = omitUndefined({
+    ...expenseData,
+    groupId,
+    timestamp: serverTimestamp(),
+  });
   try {
-    const docRef = await addDoc(collection(db, "expenses"), {
-      ...expenseData,
-      groupId,
-      timestamp: serverTimestamp(),
-    });
-    return docRef;
+    return await addDoc(collection(db, "expenses"), payload);
   } catch (e) {
     console.error("Error adding document:", e);
     throw e;

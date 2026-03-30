@@ -4,6 +4,7 @@ import { db } from "../api/firebase"; // Direct import from the config file
 import { collection, onSnapshot, query, orderBy } from 'firebase/firestore';
 import { Users, Plus, ArrowRight, UserPlus } from 'lucide-react';
 import { motion } from 'framer-motion';
+import toast from 'react-hot-toast';
 
 const GroupSelection = ({ onSelectGroup }) => {
   const [groups, setGroups] = useState([]);
@@ -26,9 +27,14 @@ const GroupSelection = ({ onSelectGroup }) => {
   };
 
   const handleCreate = async () => {
-    if (newGroupName && members.length > 0) {
+    if (!newGroupName?.trim() || members.length === 0) return;
+    try {
       const docRef = await createGroup(newGroupName, members);
-      onSelectGroup({ id: docRef.id, name: newGroupName, members });
+      toast.success('Group saved to Firebase');
+      onSelectGroup({ id: docRef.id, name: newGroupName.trim(), members });
+    } catch (err) {
+      console.error(err);
+      toast.error(err?.message || 'Could not create group. Check Firestore rules and .env.');
     }
   };
 
