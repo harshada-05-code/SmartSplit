@@ -1,6 +1,6 @@
 const CATEGORY_CONFIG = {
-  food: { icon: '🍕', keywords: ['pizza', 'zomato', 'swiggy', 'dinner', 'cake'] },
-  travel: { icon: '🚕', keywords: ['uber', 'ola', 'auto', 'fuel', 'petrol'] },
+  food: { icon: '🍕', keywords: ['pizza', 'zomato', 'swiggy', 'dinner', 'cake','food'] },
+  travel: { icon: '🚕', keywords: ['uber', 'ola', 'auto', 'fuel', 'petrol','travel'] },
   rent: { icon: '🏠', keywords: ['rent', 'maintenance', 'deposit'] }
 };
 
