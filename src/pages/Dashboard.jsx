@@ -4,6 +4,8 @@ import AddExpenseForm from '../components/AddExpenseForm';
 import { calculateBalances, minimizeTransactions } from '../lib/settlement';
 import { LayoutDashboard, Receipt, ArrowRightLeft, TrendingUp } from 'lucide-react';
 
+document.documentElement.classList.toggle('dark')
+
 const Dashboard = ({ groupId, members }) => {
   const [expenses, setExpenses] = useState([]);
   const [balances, setBalances] = useState({});
