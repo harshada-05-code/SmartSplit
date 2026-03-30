@@ -5,6 +5,16 @@ import { PieChart, Info } from 'lucide-react';
 import toast from 'react-hot-toast';
 import { motion } from 'framer-motion';
 
+import { db } from "../firebase";
+import { collection, addDoc } from "firebase/firestore";
+
+const handleAddExpense = async () => {
+  await addDoc(collection(db, "expenses"), {
+    title: expenseTitle,
+    amount: amount,
+  });
+};
+
 function stripUndefined(obj) {
   return Object.fromEntries(Object.entries(obj).filter(([, v]) => v !== undefined));
 }

@@ -7,14 +7,14 @@ import { getFirestore } from "firebase/firestore";
  * Vite only exposes env vars prefixed with `VITE_`.
  */
 const firebaseConfig = {
-  apiKey: import.meta.env.VITE_FIREBASE_API_KEY,
-  authDomain: import.meta.env.VITE_FIREBASE_AUTH_DOMAIN,
-  projectId: import.meta.env.VITE_FIREBASE_PROJECT_ID,
-  storageBucket: import.meta.env.VITE_FIREBASE_STORAGE_BUCKET,
-  messagingSenderId: import.meta.env.VITE_FIREBASE_MESSAGING_SENDER_ID,
-  appId: import.meta.env.VITE_FIREBASE_APP_ID,
+  apiKey: "AIzaSyBaKSZp9o7FvwnlDizX5Ty2sfg7BMv-l_o",
+  authDomain: "smartsplit-e4550.firebaseapp.com",
+  projectId: "smartsplit-e4550",
+  storageBucket: "smartsplit-e4550.firebasestorage.app",
+  messagingSenderId: "760408283525",
+  appId: "1:760408283525:web:8528f33eafbce661744cec",
+  measurementId: "G-SWT9NR8WL1"
 };
-
 function validateConfig() {
   const entries = [
     ["VITE_FIREBASE_API_KEY", firebaseConfig.apiKey],
