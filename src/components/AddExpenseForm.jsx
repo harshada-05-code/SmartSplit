@@ -64,19 +64,25 @@ const AddExpenseForm = ({ groupId, members }) => {
         required
       />
 
-      <div className="relative">
-        <span className="absolute left-4 top-3.5 text-slate-400">₹</span>
-        <input 
-          type="number"
-          className="input pl-8"
-          placeholder="0.00"
-          value={amount}
-          onChange={(e) => setAmount(e.target.value)}
-          required
-        />
-      </div>
+     <div className="relative">
+  {/* The icon/symbol */}
+  <span className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 font-medium">
+    ₹
+  </span>
+  
+  {/* The input with Padding Left (pl-8) */}
+  <input 
+    type="number"
+    className="w-full p-3 pl-10 bg-gray-50 dark:bg-gray-900 border-none rounded-2xl focus:ring-2 focus:ring-indigo-500 dark:text-white"
+    placeholder="0.00"
+    value={amount}
+    onChange={(e) => setAmount(e.target.value)}
+    required
+  />
+</div>
 
-      {/* Split Type Toggle */}
+
+      {/* Two different split options: equal split and custom split */}
       <div className="flex rounded-2xl border border-slate-200/70 bg-white/60 p-1 shadow-sm dark:border-white/10 dark:bg-slate-950/25">
         <button 
           type="button"
@@ -98,7 +104,7 @@ const AddExpenseForm = ({ groupId, members }) => {
         > CUSTOM </button>
       </div>
 
-      {/* Custom Inputs Rendering */}
+      {/* Custom Splitting between members */}
       {splitType === 'custom' && (
         <motion.div
           initial={{ opacity: 0, y: 6 }}
