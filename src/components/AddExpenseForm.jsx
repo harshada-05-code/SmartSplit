@@ -15,9 +15,15 @@ const AddExpenseForm = ({ groupId, members }) => {
     setCustomShares({ ...customShares, [member]: parseFloat(value) || 0 });
   };
 
-  const handleSubmit = async (e) => {
-    e.preventDefault();
-    const totalAmount = parseFloat(amount);
+    const handleSubmit = async (e) => {
+  e.preventDefault();
+  try {
+    const res = await addExpense(groupId, expenseData);
+    alert("Check Firebase Console for ID: " + res.id); // If this alert pops up, the data IS in Firebase somewhere!
+  } catch (err) {
+    alert("Firebase Error: " + err.message); // This will tell us if permission is denied.
+  }
+};
     
     // Validation for Custom Split
     if (splitType === 'custom') {
