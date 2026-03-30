@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { db } from '../api/firebase';
-import { collection, onSnapshot, query, where, orderBy } from 'firebase/firestore';
+import { collection, onSnapshot, query, where } from 'firebase/firestore';
 // Import the logic we built for optimized settlements 
 import { calculateBalances, minimizeTransactions } from '../lib/settlement';
 import AddExpenseForm from '../components/AddExpenseForm';
@@ -14,6 +14,7 @@ import {
   ExternalLink 
 } from 'lucide-react';
 import { motion } from 'framer-motion';
+import toast from 'react-hot-toast';
 
 
 const Dashboard = ({ groupId, members }) => {
@@ -23,19 +24,38 @@ const Dashboard = ({ groupId, members }) => {
 
   useEffect(() => {
     // Real-time listener for instant updates across devices 
-    const q = query(
-      collection(db, "expenses"), 
-      where("groupId", "==", groupId),
-      orderBy("timestamp", "desc")
-    );
+    // Avoid requiring a composite index for this demo: we sort locally by timestamp.
+    const q = query(collection(db, "expenses"), where("groupId", "==", groupId));
 
-    const unsubscribe = onSnapshot(q, (snapshot) => {
-      const data = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
-      setExpenses(data);
-      
-      const balances = calculateBalances(data, members);
-      setSettlements(minimizeTransactions(balances));
-    });
+    const unsubscribe = onSnapshot(
+      q,
+      (snapshot) => {
+        const data = snapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() }));
+
+        // Sort newest-first. `timestamp` is a Firestore Timestamp (has `toMillis()`), but
+        // can be null briefly after write when using serverTimestamp().
+        data.sort((a, b) => {
+          const aMs = a?.timestamp?.toMillis?.() ?? 0;
+          const bMs = b?.timestamp?.toMillis?.() ?? 0;
+          return bMs - aMs;
+        });
+
+        // Ensure amount is numeric (Firestore may return number, but keep it safe).
+        const normalized = data.map((exp) => ({
+          ...exp,
+          amount: Number(exp.amount ?? 0),
+        }));
+
+        setExpenses(normalized);
+
+        const balances = calculateBalances(normalized, members);
+        setSettlements(minimizeTransactions(balances));
+      },
+      (err) => {
+        console.error(err);
+        toast.error(err?.message || 'Failed to load expenses from Firestore');
+      }
+    );
 
     return () => unsubscribe();
   }, [groupId, members]);
@@ -86,7 +106,7 @@ const Dashboard = ({ groupId, members }) => {
 
               <p className="text-sm font-semibold text-white/80">Total Group Spend</p>
               <h2 className="mt-1 text-4xl font-black tracking-tight">
-                ₹{expenses.reduce((acc, curr) => acc + curr.amount, 0).toLocaleString()}
+                ₹{expenses.reduce((acc, curr) => acc + Number(curr.amount ?? 0), 0).toLocaleString()}
               </h2>
               <p className="mt-3 text-xs font-semibold text-white/75">
                 {expenses.length} expenses · {members?.length ?? 0} members
