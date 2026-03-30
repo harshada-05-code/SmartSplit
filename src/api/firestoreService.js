@@ -1,41 +1,28 @@
-import { db } from "./firebase"; // Import it from your config
-export { db }; // Re-export it so other files can find it here
 import { db } from "./firebase";
-import { collection, addDoc, serverTimestamp } from "firebase/firestore";
-import { 
-  collection, 
-  addDoc, 
-  updateDoc, 
-  doc, 
-  onSnapshot, 
-  query, 
-  where 
+export { db };
+import {
+  collection,
+  addDoc,
+  serverTimestamp,
+  query,
+  where,
+  onSnapshot,
 } from "firebase/firestore";
 
 // 1. Create a new group
 export const createGroup = async (groupName, members) => {
   return await addDoc(collection(db, "groups"), {
     name: groupName,
-    members: members, // Array of names or IDs
-    createdAt: new Date()
+    members,
+    createdAt: serverTimestamp(),
   });
 };
-
-// // 2. Add an expense to a group
-// export const addExpense = async (groupId, expenseData) => {
-//   // expenseData should include: title, amount, payer, splitDetails, category
-//   return await addDoc(collection(db, "expenses"), {
-//     ...expenseData,
-//     groupId,
-//     timestamp: new Date()
-//   });
-// };
 
 // 3. Real-time listener for expenses
 export const subscribeToExpenses = (groupId, callback) => {
   const q = query(collection(db, "expenses"), where("groupId", "==", groupId));
   return onSnapshot(q, (snapshot) => {
-    const expenses = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+    const expenses = snapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() }));
     callback(expenses);
   });
 };
@@ -44,13 +31,12 @@ export const addExpense = async (groupId, expenseData) => {
   try {
     const docRef = await addDoc(collection(db, "expenses"), {
       ...expenseData,
-      groupId: groupId,
-      timestamp: serverTimestamp(), // Critical for ordering the dashboard
+      groupId,
+      timestamp: serverTimestamp(),
     });
-    console.log("Document written with ID: ", docRef.id);
     return docRef;
   } catch (e) {
-    console.error("Error adding document: ", e);
+    console.error("Error adding document:", e);
     throw e;
   }
 };
