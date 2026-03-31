@@ -1,19 +1,3 @@
-# React + Vite
-
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
-
-Currently, two official plugins are available:
-
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Oxc](https://oxc.rs)
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/)
-
-## React Compiler
-
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
-
-## Expanding the ESLint configuration
-
-If you are developing a production application, we recommend using TypeScript with type-aware lint rules enabled. Check out the [TS template](https://github.com/vitejs/vite/tree/main/packages/create-vite/template-react-ts) for information on how to integrate TypeScript and [`typescript-eslint`](https://typescript-eslint.io) in your project.
 
 💸 SmartSplit: AI-Powered Expense Management
 A modern, real-time full-stack web application designed to simplify group expense sharing with automated categorization and optimized debt settlement.
@@ -92,7 +76,7 @@ Real-Time Validation: Built a custom validation layer for "Custom Splitting" to 
 
 Environment Security: Secured sensitive Firebase keys using Vercel environment variables to prevent exposure in public repositories.
 
-Screenshot 
+Screenshot
 <img width="1918" height="1020" alt="Dashboard" src="https://github.com/user-attachments/assets/ff46ee2f-3d10-403c-a13f-200884709459" />
 <img width="1918" height="1016" alt="Splitting menu" src="https://github.com/user-attachments/assets/2e7583e6-31b8-4a76-bd83-5b4560734aab" />
 
